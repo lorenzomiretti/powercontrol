@@ -20,7 +20,6 @@ N_sim = 100             # Monte Carlo samples for estimating statistical quantit
 L = 4**2                # number of APs (must be a square number)
 N = 8                   # number of AP antennas 
 K = 64                  # number of UEs
-
 squareLength  = 500     # lenght of squared service area [m]
 p_max = 100             # UE power budget [mW]
 
