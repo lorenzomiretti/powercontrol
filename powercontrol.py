@@ -4,7 +4,7 @@ Code for "Two-timescale joint power control and beamforming design with applicat
 Author: Lorenzo Miretti
 
 License: This code is licensed under the GPLv2 license. If you in any way
-use this code for research that results in publications, please cite our
+use this code for research that results in publications, please cite ourpython -m venv .venv
 paper as described in the README file
 """
 
@@ -69,7 +69,7 @@ def normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weight
         # Power control
         t = np.array([weights[k]*p[k]/SINR[k] for k in range(K)])
         p_list.append(p_max/max(t)*t)
-        # Stopping condition
+        # Stopping conditionpy
         n += 1
         progress = np.linalg.norm(p_list[n]-p_list[n-1])
         if progress < toll:
