@@ -17,10 +17,10 @@ import powercontrol as pc
 
 def main():
     # Parameters
-    N_iter_max = 30         # Number of iterations
-    N_cdf = 50
-    weights = np.ones(pc.K)
-    toll = 1e-2
+    N_iter_max = 30          # Number of iterations
+    N_cdf = 100              # Number of user drops
+    weights = np.ones(pc.K)  # Weights of max-min problem
+    toll = 1e-1              # Algorithm convergence tolerance 
 
     # Initialization
     np.random.seed(0)
@@ -34,8 +34,6 @@ def main():
         Gamma = pc.compute_ch_statistics(pos)
         # Draw a list of N_sim channel realizations
         H_list = pc.draw_channel_realizations(Gamma)
-        # Define cells (assign user to access points)
-        _, cells = pc.compute_clusters(Gamma,Q=1)
         # Compute user-centric clusters (cluster size Q <= L)        
         clusters = pc.compute_clusters(Gamma,Q=4)
         # Compute channel estimates
@@ -45,17 +43,17 @@ def main():
 
         # Long-term max-min joint problem
         _, p_MMSE, parameters_MMSE = pc.normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll)
+        # Evaluate performance (coherent bound)
+        R_MMSE = np.append(R_MMSE,pc.compute_ergodic_rates(H_list,H_hat_list,p_MMSE,pc.MMSE,parameters_MMSE))
 
-        # Long-term max-min power control 
+        # Long-term max-min power control with fixed beamforming design
         p_full = np.ones(pc.K)*pc.p_max
         Psi_list_pc = pc.compute_parameters_MMSE(Err_cov_list,p_full)
         parameters_pc = (clusters[0],Psi_list_pc,p_full) 
         sqrtErr_cov_list = [[sqrtm(Err_cov_list[l][k]) for k in range(pc.K)] for l in range(pc.L)]
         interf, signal, noise = pc.compute_channel_coefficients(H_hat_list,sqrtErr_cov_list,pc.MMSE,parameters_pc)
         p_pc, _ = pc.max_min_power_control(interf,signal/weights,noise,pc.p_max)
-
-        # Evaluate performance (Ergodic rates)
-        R_MMSE = np.append(R_MMSE,pc.compute_ergodic_rates(H_list,H_hat_list,p_pc,pc.MMSE,parameters_MMSE))
+        # Evaluate performance (coherent bound rates)
         R_pc = np.append(R_pc, pc.compute_ergodic_rates(H_list,H_hat_list,p_pc,pc.MMSE,parameters_pc))
 
         # Short-term max-min joint problem 
@@ -65,7 +63,7 @@ def main():
             _, p_MMSE, parameters_MMSE = pc.normalized_FP_iterations([H_hat_list[m]],Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll)
             # Calculate instantaneous rates
             R_inst = pc.compute_ergodic_rates([H_list[m]],[H_hat_list[m]],p_MMSE,pc.MMSE,parameters_MMSE)
-            # Update ergodic rates
+            # Update coherent bound
             R += R_inst/pc.N_sim
         R_MMSE_short = np.append(R_MMSE_short,R)
 
@@ -91,7 +89,6 @@ def main():
     plt.grid()
     plt.tight_layout()
     plt.legend(fontsize= fontSize)
-    # plt.savefig("corr.pdf", bbox_inches = 'tight', pad_inches = 0)
     plt.show()
 
 main()
