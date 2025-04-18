@@ -17,7 +17,7 @@ import powercontrol as pc
 def main():
     # Parameters
     N_iter_max = 30          # Number of iterations
-    N_cdf = 3              # Number of user drops
+    N_cdf = 100              # Number of user drops
     weights = np.ones(pc.K)  # Weights of max-min problem
     toll = 1e-1              # Algorithm convergence tolerance 
 
