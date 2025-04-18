@@ -3,7 +3,7 @@
 Code for "Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO"
 Author: Lorenzo Miretti
 
-Output: Figure 2a - convergence of fixed-point iterations
+Output: Figure 2b - convergence of normalized fixed-point iterations
 
 License: This code is licensed under the GPLv2 license. If you in any way
 use this code for research that results in publications, please cite our
@@ -16,9 +16,8 @@ import powercontrol as pc
 
 def main():
     # Parameters
-    N_iter_max = 20                     # Number of iterations
-    r = 2.5                             # Minimum rate requirements
-    weights = (2**r-1)*np.ones(pc.K)    # Convert to SINR requirements
+    N_iter_max = 20                         # Number of iterations
+    weights = np.ones(pc.K)                 # Weights of max-min problem
     # Initialization
     np.random.seed(0)
     # Generate AP and random UE positions
@@ -35,9 +34,9 @@ def main():
     H_hat_list = pc.draw_CSI_realizations(H_list,clusters)
     # Compute error covariances 
     Err_cov_list = pc.compute_error_covariances(Gamma,clusters)
-    # Solve rate feasibility problem
-    p_MMSE, _, _ = pc.FP_iterations(H_hat_list,Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll=0)
-    p_LTMMSE, _, _ = pc.FP_iterations(H_hat_list,Err_cov_list,clusters,pc.LTMMSE,weights,N_iter_max,toll=0)
+    # Solve max-min rate problem
+    p_MMSE, _, _ = pc.normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll=0)
+    p_LTMMSE, _, _ = pc.normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,pc.LTMMSE,weights,N_iter_max,toll=0)
 
     # Small cells (need to recompute the channel estimates)
     # Define cells 
@@ -46,8 +45,8 @@ def main():
     H_hat_list = pc.draw_CSI_realizations(H_list,clusters)
     # Compute error covariances 
     Err_cov_list = pc.compute_error_covariances(Gamma,clusters)
-    # Solve rate feasibility problem
-    p_cell, _, _ = pc.FP_iterations(H_hat_list,Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll=0)
+    # Solve max-min rate problem
+    p_cell, _, _ = pc.normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,pc.MMSE,weights,N_iter_max,toll=0)
 
     # Plot
     plt.figure(figsize=(8, 5))
@@ -60,8 +59,7 @@ def main():
     dist_cell = [np.linalg.norm(p_cell[n]-p_cell[-1]) for n in iters]
     plt.semilogy(iters,dist_MMSE,'o--',lw=lwidth,ms = msize,label='Centralized')
     plt.semilogy(iters,dist_LTMMSE,'^--',lw=lwidth,ms = msize,label='Distributed')
-    # Commented since diverging (unfeasible rate constraints)
-    # plt.semilogy(iters,dist_cell,'s--',lw=lwidth, label='Cellular')
+    plt.semilogy(iters,dist_cell,'s--',lw=lwidth, label='Small-cells')
     plt.xlabel('Iteration number', fontsize = fontSize)
     plt.ylabel('Distance from solution', fontsize = fontSize)
     plt.xticks(np.arange(0,len(p_MMSE),2),fontsize = fontSize-2)

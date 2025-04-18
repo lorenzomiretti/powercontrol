@@ -3,6 +3,8 @@
 Code for "Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO"
 Author: Lorenzo Miretti
 
+This file collects the main functions that are used to create the plots. 
+
 License: This code is licensed under the GPLv2 license. If you in any way
 use this code for research that results in publications, please cite ourpython -m venv .venv
 paper as described in the README file
@@ -31,8 +33,6 @@ def test():
     Gamma = compute_ch_statistics(pos)
     # Draw a list of N_sim channel realizations
     H_list = draw_channel_realizations(Gamma)
-    # Define cells (assign user to access points)
-    _, cells = compute_clusters(Gamma,Q=1)
     # Compute user-centric clusters (cluster size Q <= L)        
     clusters = compute_clusters(Gamma,Q=4)
     # Compute channel estimates
