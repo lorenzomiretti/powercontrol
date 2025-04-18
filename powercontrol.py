@@ -40,8 +40,9 @@ def test():
     Err_cov_list = compute_error_covariances(Gamma,clusters)
     # Normalized fixed-point iterations
     weights = np.ones(K)
-    N_iter_max = 20
+    N_iter_max = 40
     toll = 0.1
+    normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,MF,weights,N_iter_max, toll)
     normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,MMSE,weights,N_iter_max, toll)
     normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,LTMMSE,weights,N_iter_max, toll)
 
@@ -62,6 +63,9 @@ def FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weights,N_iter_ma
         elif beamforming == MMSE:
             Psi_list = compute_parameters_MMSE(Err_cov_list,p)
             parameters = (clusters[0],Psi_list,p) 
+        elif beamforming == MMSE:
+            C_list = compute_parameters_MF(H_hat_list,clusters,p)
+            parameters = (C_list,p)
         interf, signal, noise = compute_channel_coefficients(H_hat_list,sqrtErr_cov_list,beamforming,parameters)
         SINR = compute_SINR(interf,signal,noise,p)    
         # Power control
@@ -94,6 +98,9 @@ def normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weight
         elif beamforming == MMSE:
             Psi_list = compute_parameters_MMSE(Err_cov_list,p)
             parameters = (clusters[0],Psi_list,p) 
+        elif beamforming == MF:
+            C_list = compute_parameters_MF(H_hat_list,clusters,p)
+            parameters = (C_list,p)
         interf, signal, noise = compute_channel_coefficients(H_hat_list,sqrtErr_cov_list,beamforming,parameters)
         SINR = compute_SINR(interf,signal,noise,p)    
         # Power control
@@ -276,6 +283,41 @@ def compute_parameters_LTMMSE(H_hat_list,Err_cov_list,clusters,p):
             C_list[i][:,k] = c_k[K*l:K*(l+1)]
     return C_list, Psi_list
 
+def MF(H_hat,parameters):
+    """ MF combining
+    """
+    C = parameters[0]
+    V_list = [] 
+    for l in range(L):
+        V_MF =  H_hat[l]
+        C_l = np.diag(C[l,:])
+        V_MF = V_MF @ C_l 
+        V_list.append(V_MF) 
+    return V_list
+
+def compute_parameters_MF(H_list,clusters,p):
+    """ Computation of LSFD coefficients for MR combining. 
+    """
+    UE_clusters = clusters[0]
+    Q = len(UE_clusters[0])
+    C = np.zeros((L,K),dtype=complex)
+    for k in range(K):
+        a = np.zeros((Q),dtype=complex)
+        B = np.zeros((Q,Q),dtype=complex)
+        sig = np.zeros(Q,dtype=complex)
+        for n in range(N_sim):
+            G_k = np.zeros((Q,K),dtype=complex)
+            for q in range(Q):
+                l = UE_clusters[k][q]
+                H_l = H_list[n][l]
+                G_k[q,:] = herm(H_l[:,k]) @ H_l
+            B += G_k @ diag(p) @ herm(G_k) /N_sim
+            a += G_k[:,k]/N_sim
+            sig += np.abs(G_k[:,k])/N_sim
+        c_k = inv(B+ np.diag(sig)) @ a *p[k]
+        for q in range(Q):
+            C[UE_clusters[k][q],k] = c_k[q]
+    return C
 
 def generate_setup(plot = False):
     ''' Squared service area of length squareLength. Grid of APs, uniformely distributed APs. 
