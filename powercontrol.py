@@ -35,7 +35,7 @@ def test():
     _, cells = compute_clusters(Gamma,Q=1)
     # Compute user-centric clusters (cluster size Q <= L)        
     clusters = compute_clusters(Gamma,Q=4)
-    # Draw a list of N_sim local MMSE channel estimates, and get error covariances
+    # Compute channel estimates
     H_hat_list = draw_CSI_realizations(H_list,clusters)
     # Compute error covariances 
     Err_cov_list = compute_error_covariances(Gamma,clusters)
@@ -46,6 +46,37 @@ def test():
     normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,MMSE,weights,N_iter_max, toll)
     normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,LTMMSE,weights,N_iter_max, toll)
 
+def FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weights,N_iter_max,toll):
+    # Normalized fixed point iterations 
+    # Initial power vector (no power control, full power)
+    p_list = [np.ones(K)*p_max]
+    solved = False
+    n = 0
+    # preinitialize some useful auxiliary variables
+    sqrtErr_cov_list = [[sqrtm(Err_cov_list[l][k]) for k in range(K)] for l in range(L)]
+    while solved == False:
+        p = p_list[n]
+        # Beamforming optimization
+        if beamforming == LTMMSE:
+            C_list, Psi_list = compute_parameters_LTMMSE(H_hat_list,Err_cov_list,clusters,p)
+            parameters = (C_list,Psi_list,p)
+        elif beamforming == MMSE:
+            Psi_list = compute_parameters_MMSE(Err_cov_list,p)
+            parameters = (clusters[0],Psi_list,p) 
+        interf, signal, noise = compute_channel_coefficients(H_hat_list,sqrtErr_cov_list,beamforming,parameters)
+        SINR = compute_SINR(interf,signal,noise,p)    
+        # Power control
+        p_list.append(np.array([weights[k]*p[k]/SINR[k] for k in range(K)]))
+        # Stopping conditionpy
+        n += 1
+        progress = np.linalg.norm(p_list[n]-p_list[n-1])
+        if progress < toll:
+            solved = True
+            print('Solved. Progress: ', progress)
+        elif n == N_iter_max:
+            solved = True
+            print('Warning: maximum number of iterations reached. Progress: ', progress)
+    return p_list, p, parameters
 
 def normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weights,N_iter_max,toll):
     # Normalized fixed point iterations 
@@ -74,7 +105,7 @@ def normalized_FP_iterations(H_hat_list,Err_cov_list,clusters,beamforming,weight
         progress = np.linalg.norm(p_list[n]-p_list[n-1])
         if progress < toll:
             solved = True
-            print('Solved. Progress: ', np.linalg.norm(p_list[n]-p_list[n-1]))
+            print('Solved. Progress: ', progress)
         elif n == N_iter_max:
             solved = True
             print('Warning: maximum number of iterations reached. Progress: ', progress)

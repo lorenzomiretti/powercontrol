@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Code for JSAC paper
-Output: Convergence of normalized fixed point iterations 
+Code for "Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO"
 Author: Lorenzo Miretti
+
+Output: Figure 4a - comparison of centralized cell-free schemes 
 
 License: This code is licensed under the GPLv2 license. If you in any way
 use this code for research that results in publications, please cite our
@@ -37,7 +38,7 @@ def main():
         _, cells = pc.compute_clusters(Gamma,Q=1)
         # Compute user-centric clusters (cluster size Q <= L)        
         clusters = pc.compute_clusters(Gamma,Q=4)
-        # Draw a list of N_sim local MMSE channel estimates, and get error covariances
+        # Compute channel estimates
         H_hat_list = pc.draw_CSI_realizations(H_list,clusters)
         # Compute error covariances 
         Err_cov_list = pc.compute_error_covariances(Gamma,clusters)
