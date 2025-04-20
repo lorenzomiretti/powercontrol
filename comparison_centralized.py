@@ -36,8 +36,8 @@ def main():
         # Draw a list of N_sim channel realizations
         H_list = pc.draw_channel_realizations(Gamma)
         # Compute user-centric clusters (cluster size Q <= L) 
-        # Q = 4  # centralized cell-free  
-        Q = 1  # small cells   
+        Q = 4  # centralized cell-free  
+        # Q = 1  # small cells   
         clusters = pc.compute_clusters(Gamma,Q)
         # Compute channel estimates
         H_hat_list = pc.draw_CSI_realizations(H_list,clusters)
