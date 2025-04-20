@@ -3,7 +3,8 @@
 Code for "Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO"
 Author: Lorenzo Miretti
 
-Output: Figure 4a - comparison of centralized cell-free schemes 
+Output: Figure 4a - comparison of centralized cell-free schemes, or
+        Figure 6 - comparison of small-cell schemes
 
 License: This code is licensed under the GPLv2 license. If you in any way
 use this code for research that results in publications, please cite our
@@ -34,8 +35,10 @@ def main():
         Gamma = pc.compute_ch_statistics(pos)
         # Draw a list of N_sim channel realizations
         H_list = pc.draw_channel_realizations(Gamma)
-        # Compute user-centric clusters (cluster size Q <= L)        
-        clusters = pc.compute_clusters(Gamma,Q=4)
+        # Compute user-centric clusters (cluster size Q <= L) 
+        # Q = 4  # centralized cell-free  
+        Q = 1  # small cells   
+        clusters = pc.compute_clusters(Gamma,Q)
         # Compute channel estimates
         H_hat_list = pc.draw_CSI_realizations(H_list,clusters)
         # Compute error covariances 
