@@ -157,10 +157,11 @@ def compute_ergodic_rates(H_list,H_hat_list,p,combiner,parameters):
         # Equivalent channel
         H = H_list[n] 
         H_eq = np.zeros((K,K),dtype=complex)
+        noise = np.zeros(K)
         # Updated statistics
         for l in range(L):
             H_eq +=  herm(H[l]) @ V[l] 
-            noise = np.square(norm(V[l],axis=0))    
+            noise += np.square(norm(V[l],axis=0))    
         interf = np.square(np.abs(H_eq))
         signal = np.square(np.abs(diag(H_eq)))
         interf = interf-np.diag(signal)
