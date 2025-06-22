@@ -2,7 +2,7 @@
 
 This is a code package related to the following scientific article:
 
-Lorenzo Miretti, Renato L. G. Cavalcante, Slawomir Stanczak, “Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO,” in *IEEE Transactions on Wireless Communications*, to appear, 2025
+Lorenzo Miretti, Renato L. G. Cavalcante, Slawomir Stanczak, “Two-timescale joint power control and beamforming design with applications to cell-free massive MIMO,” in *IEEE Transactions on Wireless Communications*, 2025
 
 The package contains a simulation environment that reproduces the numerical results in the article. We encourage you to also perform reproducible research!
 
